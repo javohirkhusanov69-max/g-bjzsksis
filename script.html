@@ -53,17 +53,7 @@
       min-width: 120px; border-radius: 10px; text-align: center;
       z-index: 9999; display: flex; justify-content: center; align-items: center;
     }
-    #editorMenu {
-      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      background: white; border: 2px solid red; padding: 15px;
-      border-radius: 12px; display: none; flex-direction: column;
-      gap: 8px; z-index: 99999; width: 280px;
-    }
-    #editorMenu input { width: 48%; padding: 5px; font-size: 14px; margin: 2px; }
-    .row { display: flex; justify-content: space-between; gap: 5px; }
-    .addRow { background: red; color: white; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; }
-    #doneBtn { background: green; }
-    #animatedText, #time, #crashValue, #signalStatus, button, span, div {
+    #animatedText, #time, #crashValue, #signalStatus, span, div {
       font-family: "CustomBold", Arial, sans-serif; font-weight: 900;
     }
   </style>
@@ -81,15 +71,36 @@
     <div id="crashValue">0.00</div>
   </div>
 
-  <div id="editorMenu"></div>
-
   <div class="bottom-bar">
     <img id="menuIcon" class="circle-icon" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTOtoqIx6AHqolyva6GK4h7R12WOcTIwXStqrv6CQBKKA&s=10">
     <div id="time">ByTroX Script Predictor ⚡</div>
     <img id="tgImg" class="circle-icon" src="https://i.ibb.co/Q7WqGVGX/Picsart-25-09-29-21-44-26-432.jpg">
   </div>
 
-  <script>
+ <!-- Firebase v8 -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<script>
+  // Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyB1_XCbC777hKwxlilhMeq5Hpty1dvDT1I",
+    authDomain: "giper-8fd92.firebaseapp.com",
+    databaseURL: "https://giper-8fd92-default-rtdb.firebaseio.com",
+    projectId: "giper-8fd92",
+    storageBucket: "giper-8fd92.appspot.com",
+    messagingSenderId: "485740337398",
+    appId: "1:485740337398:web:demo"
+  };
+
+  // V8 sintaksis
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  db.ref("predictorvalue").on("value", snap=>{
+    console.log("Firebase dan kelgan:", snap.val());
+  });
+
     // Animated text
     const texts = ["ʙʏᴛʀᴏx ᴘʀᴇᴅɪᴄᴛᴏʀ ⚡","https://ᴛ.ᴍᴇ/ʙʏᴛʀᴏx_ɴᴏᴠᴀ","ᴄᴏɴᴛʀᴀᴄᴛ @ʙʏᴛʀᴏx_1"];
     let idx = 0;
@@ -103,44 +114,23 @@
     // SIGNAL
     setTimeout(()=>{ document.getElementById("signalStatus").innerHTML='SIGNAL ON <img src="https://i.ibb.co/CKtzJjD0/Picsart-25-09-29-22-38-29-665-removebg-preview.png" style="width:27px;height:27px;margin-left:5px;">'; },3000);
 
-    // Crash editor
+    // CrashValue Firebase’dan olish
     const crash = document.getElementById("crashValue");
-    const editor = document.getElementById("editorMenu");
     let timers=[];
 
-    function addRow(v="",s=""){ 
-      let r=document.createElement("div");
-      r.className="row";
-      r.innerHTML=`<input type="number" step="0.01" placeholder="Value" value="${v}"><input type="number" placeholder="Seconds" value="${s}">`;
-      editor.insertBefore(r,btns);
-    }
-    const btns=document.createElement("div");
-    btns.style.display="flex"; btns.style.justifyContent="space-between"; btns.style.gap="10px"; btns.style.marginTop="10px";
-    const addBtn=document.createElement("button"); addBtn.className="addRow"; addBtn.innerText="+ Qator qo‘shish"; addBtn.onclick=()=>addRow();
-    const doneBtn=document.createElement("button"); doneBtn.className="addRow"; doneBtn.id="doneBtn"; doneBtn.innerText="Done"; doneBtn.onclick=startTimers;
-    btns.appendChild(addBtn); btns.appendChild(doneBtn); editor.appendChild(btns);
-
-    crash.onclick=()=>{ editor.style.display=editor.style.display==="flex"?"none":"flex"; };
-
-    function startTimers(){
+    function startSequence(data){
       timers.forEach(t=>clearTimeout(t)); timers=[];
-      const rows=editor.querySelectorAll(".row"); 
       let delay=0;
-
-      rows.forEach(r=>{
-        const [valIn,secIn]=r.querySelectorAll("input");
-        let v=parseFloat(valIn.value); 
-        let s=parseInt(secIn.value);
-        if(!isNaN(v)&&!isNaN(s)){ 
-          // Birinchi chiqqan zahoti ko‘rsatamiz
-          timers.push(setTimeout(()=>{crash.innerText=v.toFixed(2);},delay));
-          delay+=s*1000; 
-        }
+      data.forEach(item=>{
+        timers.push(setTimeout(()=>{crash.innerText=parseFloat(item.value).toFixed(2);},delay));
+        delay+=item.seconds*1000;
       });
-
-      editor.style.display="none";
     }
-    addRow();
+
+    firebase.database().ref("predictorvalue").on("value",snap=>{
+      const val=snap.val();
+      if(val){ startSequence(val); }
+    });
 
     // Orbit anim
     const canvas=document.getElementById("orbitCanvas"); const ctx=canvas.getContext("2d"); let w,h;
@@ -150,7 +140,6 @@
     function orbit(r,c,cw){ctx.beginPath();ctx.arc(w/2,h/2,r,0,Math.PI*2);ctx.stroke();for(let i=0;i<c;i++){let f=cw?(i/c+frac):(i/c-frac);f-=Math.floor(f);let a=f*Math.PI*2;let x=w/2+Math.cos(a)*r;let y=h/2+Math.sin(a)*r;plane(x,y,a,Math.min(w,h)/500);}}
     function draw(){ctx.clearRect(0,0,w,h);ctx.strokeStyle="red";ctx.lineWidth=Math.max(2,Math.min(w,h)*0.01);let ro=Math.min(w,h)*0.42,ri=Math.min(w,h)*0.28;orbit(ro,3,false);orbit(ri,3,true);frac+=0.0049;requestAnimationFrame(draw);}draw();
 
-    
     // Links
     document.getElementById("tgImg").onclick=()=>window.open("https://t.me/bytrox_1","_blank");
     document.getElementById("menuIcon").onclick=()=>window.location.href="index.html";
