@@ -85,7 +85,7 @@
 
   <div class="bottom-bar">
     <img id="menuIcon" class="circle-icon" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTOtoqIx6AHqolyva6GK4h7R12WOcTIwXStqrv6CQBKKA&s=10">
-    <div id="time">00:00 AM</div>
+    <div id="time">ByTroX Script Predictor ⚡</div>
     <img id="tgImg" class="circle-icon" src="https://i.ibb.co/Q7WqGVGX/Picsart-25-09-29-21-44-26-432.jpg">
   </div>
 
@@ -150,9 +150,7 @@
     function orbit(r,c,cw){ctx.beginPath();ctx.arc(w/2,h/2,r,0,Math.PI*2);ctx.stroke();for(let i=0;i<c;i++){let f=cw?(i/c+frac):(i/c-frac);f-=Math.floor(f);let a=f*Math.PI*2;let x=w/2+Math.cos(a)*r;let y=h/2+Math.sin(a)*r;plane(x,y,a,Math.min(w,h)/500);}}
     function draw(){ctx.clearRect(0,0,w,h);ctx.strokeStyle="red";ctx.lineWidth=Math.max(2,Math.min(w,h)*0.01);let ro=Math.min(w,h)*0.42,ri=Math.min(w,h)*0.28;orbit(ro,3,false);orbit(ri,3,true);frac+=0.0049;requestAnimationFrame(draw);}draw();
 
-    // Time
-    function updTime(){let d=new Date();let h=d.getHours();let m=d.getMinutes();let am=h>=12?"PM":"AM";h=h%12;h=h?h:12;document.getElementById("time").innerText=String(h).padStart(2,"0")+":"+String(m).padStart(2,"0")+" "+am;}setInterval(updTime,1000);updTime();
-
+    
     // Links
     document.getElementById("tgImg").onclick=()=>window.open("https://t.me/bytrox_1","_blank");
     document.getElementById("menuIcon").onclick=()=>window.location.href="index.html";
